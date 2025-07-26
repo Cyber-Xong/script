@@ -1,0 +1,1 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyber-Xong/script/refs/heads/main/farm.lua"))()
