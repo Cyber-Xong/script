@@ -2,11 +2,9 @@
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Turtle-Brand/Turtle-Lib/main/source.lua"))()
 local w = lib:Window("MM2 Summer Farm Ball", Color3.fromRGB(238,130,238))
 
-
 local plr = game.Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-
 local character = plr.Character or plr.CharacterAdded:Wait()
 local humPart = character:WaitForChild("HumanoidRootPart")
 local humanoid = character:WaitForChild("Humanoid")
@@ -15,13 +13,7 @@ local map
 local highlights = {}
 local godConnection
 local fleeConnection
-
-plr.CharacterAdded:Connect(function(char)
-    character = char
-    humPart = char:WaitForChild("HumanoidRootPart")
-    humanoid = char:WaitForChild("Humanoid")
-    if _G.GodMode then setupGodMode() end
-end)
+local isFarming = false
 
 local function getMap()
     for _, m in ipairs(workspace:GetChildren()) do
@@ -31,9 +23,27 @@ local function getMap()
         end
     end
 end
+
 getMap()
-workspace.DescendantAdded:Connect(getMap)
-workspace.DescendantRemoving:Connect(function(m) if m == map then map = nil end end)
+
+workspace.DescendantAdded:Connect(function(desc)
+    if desc:IsA("Model") and desc:GetAttribute("MapID") then
+        map = desc
+        if _G.Farm then task.spawn(startFarm) end
+    end
+end)
+
+workspace.DescendantRemoving:Connect(function(m)
+    if m == map then map = nil end
+end)
+
+plr.CharacterAdded:Connect(function(char)
+    character = char
+    humPart = char:WaitForChild("HumanoidRootPart")
+    humanoid = char:WaitForChild("Humanoid")
+    if _G.GodMode then setupGodMode() end
+    if _G.Farm then task.spawn(startFarm) end
+end)
 
 local function setupGodMode()
     if humanoid then
@@ -61,7 +71,9 @@ local function collect(coin)
     firetouchinterest(humPart, visual, 1)
 end
 
-local function startFarm()
+function startFarm()
+    if isFarming then return end
+    isFarming = true
     while _G.Farm do
         if not map then getMap() end
         local container = map and map:FindFirstChild("CoinContainer")
@@ -90,6 +102,7 @@ local function startFarm()
             task.wait(1)
         end
     end
+    isFarming = false
 end
 
 local function createHighlight(player, color)
@@ -164,14 +177,12 @@ local function fuirTueur()
         end
         if not humPart or not map then return end
 
-        local murderPlayer = nil
         local murderHumPart = nil
 
         for _, player in pairs(game.Players:GetPlayers()) do
             if player ~= plr and player.Character then
                 local knife = player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife")
                 if knife then
-                    murderPlayer = player
                     murderHumPart = player.Character:FindFirstChild("HumanoidRootPart")
                     break
                 end
@@ -192,25 +203,20 @@ end
 local function tpNearInnocentOnce()
     if not humPart then return end
 
-    local targetPos = nil
-
     for _, player in pairs(game.Players:GetPlayers()) do
         if player ~= plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local hasGun = player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun")
             local hasKnife = player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife")
             if not hasGun and not hasKnife then
-                targetPos = player.Character.HumanoidRootPart.Position
+                local pos = player.Character.HumanoidRootPart.Position + Vector3.new(3, 0, 0)
+                humPart.CFrame = CFrame.new(pos.X, humPart.Position.Y, pos.Z)
                 break
             end
         end
     end
-
-    if targetPos then
-        local tpPos = targetPos + Vector3.new(3, 0, 0)
-        humPart.CFrame = CFrame.new(tpPos.X, humPart.Position.Y, tpPos.Z)
-    end
 end
 
+-- Global Settings
 _G.Farm = false
 _G.GodMode = false
 _G.TrackRoles = false
@@ -218,6 +224,7 @@ _G.PickGun = false
 _G.FuirTueur = false
 _G.ShowInnocents = false
 
+-- GUI
 w:Toggle("🎈 AutoFarm BeachBalls", false, function(v)
     _G.Farm = v
     if v then task.spawn(startFarm) end
@@ -225,12 +232,10 @@ end)
 
 w:Toggle("🛡️ God Mode", false, function(v)
     _G.GodMode = v
-    if v then setupGodMode() else
-        if godConnection then godConnection:Disconnect() end
-    end
+    if v then setupGodMode() else if godConnection then godConnection:Disconnect() end end
 end)
 
-w:Toggle("🔍 Afficher M & S ", false, function(v)
+w:Toggle("🔍 Afficher M & S", false, function(v)
     _G.TrackRoles = v
     if v then task.spawn(scanRoles) end
 end)
@@ -246,12 +251,9 @@ end)
 
 w:Toggle("🏃‍♂️ Fuir le Tueur", false, function(v)
     _G.FuirTueur = v
-    if v then fuirTueur() else
-        if fleeConnection then fleeConnection:Disconnect() end
-    end
+    if v then fuirTueur() else if fleeConnection then fleeConnection:Disconnect() end end
 end)
 
--- CHANGEMENT ICI : toggle remplacé par button
 w:Button("📍 TP to Innocent", function()
     tpNearInnocentOnce()
 end)
