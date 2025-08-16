@@ -90,34 +90,52 @@ pcall(function()
     -- Fuir le Tueur
     -------------------
     local fleeTask
-    function startFlee()
-        if fleeTask then return end
-        fleeTask = RunService.Heartbeat:Connect(function()
-            if not _G.FuirTueur then fleeTask:Disconnect() fleeTask = nil return end
-            if not humPart or not map then return end
 
-            local murdererHRP
-            for _, pl in pairs(Players:GetPlayers()) do
-                if pl ~= LocalPlayer and pl.Character then
-                    local knife = pl.Backpack:FindFirstChild("Knife") or pl.Character:FindFirstChild("Knife")
-                    if knife then
-                        murdererHRP = pl.Character:FindFirstChild("HumanoidRootPart")
-                        break
-                    end
+function startFlee()
+    if fleeTask then return end
+    _G.FuirTueur = true
+
+    fleeTask = RunService.Heartbeat:Connect(function()
+        if not _G.FuirTueur then
+            fleeTask:Disconnect()
+            fleeTask = nil
+            return
+        end
+
+        if not humPart or not map then return end
+
+        local murdererHRP
+        for _, pl in pairs(Players:GetPlayers()) do
+            if pl ~= LocalPlayer and pl.Character then
+                local knife = pl.Backpack:FindFirstChild("Knife") or pl.Character:FindFirstChild("Knife")
+                if knife then
+                    murdererHRP = pl.Character:FindFirstChild("HumanoidRootPart")
+                    break
                 end
             end
+        end
 
-            if murdererHRP then
-                local dist = (humPart.Position - murdererHRP.Position).Magnitude
-                if dist < 20 then
-                    local fleeDir = (humPart.Position - murdererHRP.Position).Unit
-                    local fleePos = humPart.Position + fleeDir * 25
-                    humPart.CFrame = CFrame.new(fleePos.X, humPart.Position.Y, fleePos.Z)
-                end
+        if murdererHRP then
+            local dist = (humPart.Position - murdererHRP.Position).Magnitude
+            if dist < 30 then -- distance de détection plus large
+                local fleeDir = (humPart.Position - murdererHRP.Position).Unit
+                local fleePos = humPart.Position + fleeDir * math.clamp(40 - dist, 20, 40)
+
+                -- déplacement fluide
+                humPart.CFrame = humPart.CFrame:Lerp(
+                    CFrame.new(fleePos.X, humPart.Position.Y, fleePos.Z),
+                    0.25 -- vitesse de fuite (0.1 = lent, 1 = TP direct)
+                )
             end
-        end)
-    end
-    function stopFlee() if fleeTask then fleeTask:Disconnect() fleeTask = nil end end
+        end
+    end)
+end
+
+function stopFlee()
+    _G.FuirTueur = false
+    if fleeTask then fleeTask:Disconnect() fleeTask = nil end
+end
+
 
     -------------------
     -- Track Roles
@@ -169,54 +187,66 @@ pcall(function()
     -- Pick Gun
     -------------------
     local pickGunTask
-    function startPickGun()
-        if pickGunTask then return end
-        pickGunTask = task.spawn(function()
-            while _G.PickGun do
-                if map and humPart then
-                    local gun = map:FindFirstChild("GunDrop", true)
-                    if gun and gun:IsA("Part") then
-                        local oldCFrame = humPart.CFrame
-                        humPart.CFrame = CFrame.new(gun.Position + Vector3.new(0,2,0))
-                        task.wait(0.3)
-                        firetouchinterest(humPart, gun, 0)
-                        firetouchinterest(humPart, gun, 1)
-                        task.wait(0.3)
-                        humPart.CFrame = oldCFrame
-                        task.wait(1.5)
-                    else
-                        task.wait(2)
-                    end
+
+function startPickGun()
+    if pickGunTask then return end
+    _G.PickGun = true
+    pickGunTask = task.spawn(function()
+        while _G.PickGun do
+            if humPart then
+                local gun = workspace:FindFirstChild("GunDrop", true)
+                if gun and gun:IsA("Part") then
+                    -- Téléportation au gun
+                    humPart.CFrame = CFrame.new(gun.Position + Vector3.new(0, 2, 0))
+                    
+                    -- Simulation de "pickup"
+                    firetouchinterest(humPart, gun, 0)
+                    firetouchinterest(humPart, gun, 1)
+                    
+                    task.wait(0.5)
                 else
+                    -- Pas de gun trouvé
                     task.wait(1)
                 end
+            else
+                task.wait(1)
             end
-            pickGunTask = nil
-        end)
+        end
+        pickGunTask = nil
+    end)
+end
+
+function stopPickGun()
+    _G.PickGun = false
+    if pickGunTask then
+        task.cancel(pickGunTask) -- stop propre
+        pickGunTask = nil
     end
-    function stopPickGun() _G.PickGun = false pickGunTask = nil end
+end
+
 
     -------------------
     -- NoClip
     -------------------
     local noclipConnection
-    local function setNoClip(state)
-        if state then
-            noclipConnection = RunService.Stepped:Connect(function()
-                if character then
-                    for _, part in pairs(character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            if part.Position.Y < (humPart.Position.Y - 3) then
-                                part.CanCollide = true
-                            else
-                                part.CanCollide = false
-                            end
-                        end
+local function setNoClip(state)
+    if state then
+        noclipConnection = RunService.Stepped:Connect(function()
+            if character and humPart then
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide == true then
+                        part.CanCollide = false
                     end
                 end
-            end)
-        else
-            if noclipConnection then noclipConnection:Disconnect() noclipConnection = nil end
+            end
+        end)
+    else
+        if noclipConnection then 
+            noclipConnection:Disconnect() 
+            noclipConnection = nil 
+        end
+        -- Réactiver les collisions correctement
+        if character then
             for _, part in pairs(character:GetDescendants()) do
                 if part:IsA("BasePart") then
                     part.CanCollide = true
@@ -224,6 +254,8 @@ pcall(function()
             end
         end
     end
+end
+
 
     -------------------
     -- Multiple Jump
@@ -301,7 +333,7 @@ end
     -- Boutons
     w:Button("📌 TP to Lobby", function() tpLobby() end)
     w:Button("📌 TP to Random inno", function() tpRandomInnocent() end)
-    w:Button("🕹️ Anti-AFK", function() if not antiAfkActive then antiAfk() antiAfkActive = true end end)
+    w:Button("🕹️ Anti-AFK", function() antiAfk() end)
 
     -- Label
     w:Label("🌀 made by CSA-Studio 🌀" , Color3.fromRGB(255,255,255))
