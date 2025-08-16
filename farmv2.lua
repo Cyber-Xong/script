@@ -36,7 +36,7 @@ pcall(function()
         task.spawn(function()
             while _G.Farm do
                 if not character or not humPart then
-                    task.wait(0.8)
+                    task.wait(0.5)
                     character = LocalPlayer.Character
                     humPart = character and character:FindFirstChild("HumanoidRootPart")
                 end
@@ -54,15 +54,15 @@ pcall(function()
                     end
                     if coinToCollect and humPart then
                         humPart.CFrame = coinToCollect.CFrame
-                        task.wait(0.9)
+                        task.wait(0.7)
                         humPart.CFrame = CFrame.new(132, 140, 60)
                         task.wait(1.5)
                     else
                         humPart.CFrame = CFrame.new(132, 140, 60)
-                        task.wait(0.9)
+                        task.wait(0.7)
                     end
                 else
-                    task.wait(0.9)
+                    task.wait(0.7)
                 end
             end
         end)
@@ -291,7 +291,7 @@ end
     local w = lib:Window("MM2 Summer Full Script", Color3.fromRGB(238, 130, 238))
 
     w:Toggle("🎈 AutoFarm BeachBalls", false, function(v) _G.Farm = v if v then startAutoFarm() else stopAutoFarm() end end)
-    w:Toggle("💪 God Mode", false, function(v) _G.GodMode = v if v then setupGodMode() else stopGodMode() end end)
+    w:Toggle("💪 2 Life", false, function(v) _G.GodMode = v if v then setupGodMode() else stopGodMode() end end)
     w:Toggle("🏃‍♂️ Fuir le Tueur", false , function(v) _G.FuirTueur = v if v then startFlee() else stopFlee() end end)
     w:Toggle("🔍 Track Roles", false, function(v) _G.TrackRoles = v if v then startScanRoles() else stopScanRoles() end end)
     w:Toggle("🔫 Pick Gun", false, function(v) _G.PickGun = v if v then startPickGun() else stopPickGun() end end)
