@@ -36,7 +36,7 @@ pcall(function()
         task.spawn(function()
             while _G.Farm do
                 if not character or not humPart then
-                    task.wait(0.5)
+                    task.wait(0.6)
                     character = LocalPlayer.Character
                     humPart = character and character:FindFirstChild("HumanoidRootPart")
                 end
@@ -54,15 +54,15 @@ pcall(function()
                     end
                     if coinToCollect and humPart then
                         humPart.CFrame = coinToCollect.CFrame
-                        task.wait(0.8)
+                        task.wait(0.9)
                         humPart.CFrame = CFrame.new(132, 140, 60)
-                        task.wait(1.5)
+                        task.wait(1.6)
                     else
                         humPart.CFrame = CFrame.new(132, 140, 60)
-                        task.wait(0.8)
+                        task.wait(0.9)
                     end
                 else
-                    task.wait(0.8)
+                    task.wait(0.9)
                 end
             end
         end)
