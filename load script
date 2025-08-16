@@ -1,1 +1,3 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyber-Xong/script/main/farm.lua"))()
+script V1 : loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyber-Xong/script/refs/heads/main/farm.lua"))()
+
+script V2 : loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyber-Xong/script/refs/heads/main/farmv2.lua"))()
