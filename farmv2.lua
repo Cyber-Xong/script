@@ -305,4 +305,4 @@ end
 
     -- Label
     w:Label("🌀 made by CSA-Studio 🌀" , Color3.fromRGB(255,255,255))
-end) la c'est bon je crois prend en de la graine
+end)
