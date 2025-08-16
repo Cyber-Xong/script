@@ -54,15 +54,15 @@ pcall(function()
                     end
                     if coinToCollect and humPart then
                         humPart.CFrame = coinToCollect.CFrame
-                        task.wait(0.7)
+                        task.wait(0.8)
                         humPart.CFrame = CFrame.new(132, 140, 60)
                         task.wait(1.5)
                     else
                         humPart.CFrame = CFrame.new(132, 140, 60)
-                        task.wait(0.7)
+                        task.wait(0.8)
                     end
                 else
-                    task.wait(0.7)
+                    task.wait(0.8)
                 end
             end
         end)
