@@ -33,40 +33,45 @@ pcall(function()
     -- AutoFarm
     -------------------
     function startAutoFarm()
-        task.spawn(function()
-            while _G.Farm do
-                if not character or not humPart then
-                    task.wait(0.6)
-                    character = LocalPlayer.Character
-                    humPart = character and character:FindFirstChild("HumanoidRootPart")
-                end
+    task.spawn(function()
+        while _G.Farm do
+            if not character or not humPart then
+                task.wait(0.8)
+                character = LocalPlayer.Character
+                humPart = character and character:FindFirstChild("HumanoidRootPart")
+            end
 
-                if map and map:FindFirstChild("CoinContainer") then
-                    local coinToCollect
-                    for _, coin in ipairs(map.CoinContainer:GetChildren()) do
-                        if coin:IsA("Part") and coin.Name == "Coin_Server" and coin:GetAttribute("CoinID") == "BeachBall" then
-                            local cv = coin:FindFirstChild("CoinVisual")
-                            if cv and cv.Transparency ~= 1 then
-                                coinToCollect = coin
-                                break
-                            end
+            if map and map:FindFirstChild("CoinContainer") and humPart then
+                local coinToCollect
+                for _, coin in ipairs(map.CoinContainer:GetChildren()) do
+                    if coin:IsA("Part") and coin.Name == "Coin_Server" and coin:GetAttribute("CoinID") == "BeachBall" then
+                        local cv = coin:FindFirstChild("CoinVisual")
+                        if cv and cv.Transparency ~= 1 then
+                            coinToCollect = coin
+                            break
                         end
                     end
-                    if coinToCollect and humPart then
-                        humPart.CFrame = coinToCollect.CFrame
-                        task.wait(0.9)
-                        humPart.CFrame = CFrame.new(132, 140, 60)
-                        task.wait(1.6)
-                    else
-                        humPart.CFrame = CFrame.new(132, 140, 60)
-                        task.wait(0.9)
-                    end
-                else
-                    task.wait(0.9)
                 end
+
+                if coinToCollect then
+                    -- TP plus fluide (Mobile safe)
+                    for i = 1, 5 do
+                        humPart.CFrame = humPart.CFrame:Lerp(coinToCollect.CFrame, 0.3)
+                        task.wait(0.15)
+                    end
+
+                    task.wait(1.2) -- délai + long (mobile)
+                else
+                    humPart.CFrame = CFrame.new(132, 140, 60) -- Lobby safe
+                    task.wait(1.2)
+                end
+            else
+                task.wait(1.2)
             end
-        end)
-    end
+        end
+    end)
+end
+
     function stopAutoFarm() _G.Farm = false end
 
     -------------------
