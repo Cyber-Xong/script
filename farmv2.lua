@@ -1,4 +1,4 @@
-pcall(function()
+local success, err = pcall(function()
     repeat task.wait() until game:IsLoaded()
 
     local Players = game:GetService("Players")
@@ -273,25 +273,6 @@ end
             end
         end
     end)
-    -------------------
-    -- Multiple Jump
-    -------------------
-        _G.PlayerSpeed = 16 -- vitesse normale Roblox
-
-    local function setSpeed(value)
-        _G.PlayerSpeed = value
-        if character and character:FindFirstChild("Humanoid") then
-            character.Humanoid.WalkSpeed = _G.PlayerSpeed
-        end
-    end
-
-    -- Mettre à jour la vitesse quand le perso respawn
-    LocalPlayer.CharacterAdded:Connect(function(char)
-        character = char
-        humPart = char:WaitForChild("HumanoidRootPart")
-        local hum = char:WaitForChild("Humanoid")
-        hum.WalkSpeed = _G.PlayerSpeed
-    end)
 
 
     -------------------
@@ -364,3 +345,6 @@ end
     -- Label
     w:Label("🌀 made by CSA-Studio 🌀" , Color3.fromRGB(255,255,255))
 end)
+if not success then
+    warn("Erreur dans le script:", err)
+end
