@@ -29,6 +29,27 @@ pcall(function()
         humPart = char:WaitForChild("HumanoidRootPart")
     end)
 
+    -- vitesse par défaut
+    _G.PlayerSpeed = 16  
+    
+    local function setSpeed(value)
+        _G.PlayerSpeed = value
+        local character = Players.LocalPlayer.Character
+        if character then
+            local hum = character:FindFirstChildOfClass("Humanoid")
+            if hum then
+                hum.WalkSpeed = _G.PlayerSpeed
+            end
+        end
+    end
+    
+    -- garder la vitesse après respawn
+    Players.LocalPlayer.CharacterAdded:Connect(function(char)
+        local hum = char:WaitForChild("Humanoid")
+        hum.WalkSpeed = _G.PlayerSpeed
+    end)
+
+
     -------------------
     -- AutoFarm
     -------------------
@@ -263,26 +284,7 @@ end
             end
         end
     end)
-    -------------------
-    -- Vitesse du perso
-    -------------------
-    -- Player Speed (fusion propre avec respawn)
-    _G.PlayerSpeed = 16 -- vitesse par défaut
     
-    local function setSpeed(value)
-        _G.PlayerSpeed = value
-        if character and character:FindFirstChild("Humanoid") then
-            character.Humanoid.WalkSpeed = _G.PlayerSpeed
-        end
-    end
-    
-    -- Gestion respawn (fusionné)
-    LocalPlayer.CharacterAdded:Connect(function(char)
-        character = char
-        humPart = char:WaitForChild("HumanoidRootPart")
-        local hum = char:WaitForChild("Humanoid")
-        hum.WalkSpeed = _G.PlayerSpeed
-    end)
 
     -------------------
     -- TP Lobby
@@ -330,6 +332,14 @@ end
             vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
         end)
     end
+
+    -- Initialisation des variables globales pour éviter les erreurs
+    _G.Farm = _G.Farm or false
+    _G.GodMode = _G.GodMode or false
+    _G.FuirTueur = _G.FuirTueur or false
+    _G.TrackRoles = _G.TrackRoles or false
+    _G.PickGun = _G.PickGun or false
+
     -------------------
     -- UI
     -------------------
