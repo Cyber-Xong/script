@@ -42,18 +42,19 @@ pcall(function()
             end
 
             if map and map:FindFirstChild("CoinContainer") then
-                local coinToCollect
+                local validCoins = {}
                 for _, coin in ipairs(map.CoinContainer:GetChildren()) do
                     if coin:IsA("Part") and coin.Name == "Coin_Server" and coin:GetAttribute("CoinID") == "BeachBall" then
                         local cv = coin:FindFirstChild("CoinVisual")
                         if cv and cv.Transparency ~= 1 then
-                            coinToCollect = coin
-                            break
+                            table.insert(validCoins, coin)
                         end
                     end
                 end
 
-                if coinToCollect and humPart then
+                if #validCoins > 0 and humPart then
+                    -- choisir une pièce aléatoire
+                    local coinToCollect = validCoins[math.random(1, #validCoins)]
                     humPart.CFrame = coinToCollect.CFrame
                     task.wait(1.25) -- plus lent pour éviter les lags
                     humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 3, 0)
@@ -72,6 +73,7 @@ end
 function stopAutoFarm()
     _G.Farm = false
 end
+
 
     -------------------
     -- God Mode
