@@ -59,15 +59,15 @@ function startAutoFarm()
                     -- choisir une pièce aléatoire
                     local coinToCollect = validCoins[math.random(1, #validCoins)]
                     humPart.CFrame = coinToCollect.CFrame
-                    task.wait(1) -- temps de ramassage selon device
+                    task.wait(1.2) -- temps de ramassage selon device
                     humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 3, 0) -- retour
                     task.wait(isMobile and 1.5 or 1.3) -- temps de retour selon device
                 else
                     humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 3, 0)
-                    task.wait(1.5)
+                    task.wait(2)
                 end
             else
-                task.wait(1)
+                task.wait(1.5)
             end
         end
     end)
