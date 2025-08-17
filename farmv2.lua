@@ -36,7 +36,7 @@ pcall(function()
     task.spawn(function()
         while _G.Farm do
             if not character or not humPart then
-                task.wait(1) -- un peu plus long pour mobile
+                task.wait(0.8) -- un peu plus long pour mobile
                 character = LocalPlayer.Character
                 humPart = character and character:FindFirstChild("HumanoidRootPart")
             end
@@ -57,7 +57,7 @@ pcall(function()
                     humPart.CFrame = coinToCollect.CFrame
                     task.wait(1.3) -- plus lent pour éviter les lags
                     humPart.CFrame = CFrame.new(132, 140, 60)
-                    task.wait(1.5) -- temps de retour augmenté
+                    task.wait(1) -- temps de retour augmenté
                 else
                     humPart.CFrame = CFrame.new(132, 140, 60)
                     task.wait(1) -- délai un peu plus long
