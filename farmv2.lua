@@ -1,4 +1,4 @@
-non je crois y a un probleme mais je sais pas a quel moment pcall(function()
+pcall(function()
     repeat task.wait() until game:IsLoaded()
 
     local Players = game:GetService("Players")
@@ -266,7 +266,6 @@ end
     -------------------
     -- Multiple Jump
     -------------------
-        _G.PlayerSpeed = 16 -- vitesse normale Roblox
 
     local function setSpeed(value)
         _G.PlayerSpeed = value
