@@ -325,9 +325,11 @@ end
     w:Toggle("🌀 Multiple Jump", false, function(v) multiJump = v end)
 
     -- Boutons
-    w:Button("📌 TP to Lobby", function() tpLobby() end)
-    w:Button("📌 TP to Random inno", function() tpRandomInnocent() end)
-    w:Button("🕹️ Anti-AFK", function() antiAfk() end)
+    local s = w:Section("Main") -- Crée une section
+    s:Button("📌 TP to Lobby", function() tpLobby() end)
+    s:Button("📌 TP to Random inno", function() tpRandomInnocent() end)
+    s:Button("🕹️ Anti-AFK", function() antiAfk() end)
+
 
     -- Label
     w:Label("🌀 made by CSA-Studio 🌀" , Color3.fromRGB(255,255,255))
