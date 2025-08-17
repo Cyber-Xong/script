@@ -56,10 +56,10 @@ pcall(function()
                 if coinToCollect and humPart then
                     humPart.CFrame = coinToCollect.CFrame
                     task.wait(1.3) -- plus lent pour éviter les lags
-                    humPart.CFrame = CFrame.new(132, 140, 60)
+                    humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 3, 0)
                     task.wait(1.5) -- temps de retour augmenté
                 else
-                    humPart.CFrame = CFrame.new(132, 140, 60)
+                    humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 3, 0)
                     task.wait(1) -- délai un peu plus long
                 end
             else
