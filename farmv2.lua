@@ -32,11 +32,14 @@ pcall(function()
     -------------------
     -- AutoFarm
     -------------------
-    function startAutoFarm()
+    local isMobile = game:GetService("UserInputService").TouchEnabled
+
+function startAutoFarm()
     task.spawn(function()
         while _G.Farm do
+            -- Vérification du personnage et de HumanoidRootPart
             if not character or not humPart then
-                task.wait(1) -- un peu plus long pour mobile
+                task.wait(1) -- mobile plus rapide, PC plus long
                 character = LocalPlayer.Character
                 humPart = character and character:FindFirstChild("HumanoidRootPart")
             end
@@ -56,12 +59,12 @@ pcall(function()
                     -- choisir une pièce aléatoire
                     local coinToCollect = validCoins[math.random(1, #validCoins)]
                     humPart.CFrame = coinToCollect.CFrame
-                    task.wait(1.25) -- plus lent pour éviter les lags
-                    humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 3, 0)
-                    task.wait(1.4) -- temps de retour augmenté
+                    task.wait(1) -- temps de ramassage selon device
+                    humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 3, 0) -- retour
+                    task.wait(isMobile and 1.5 or 1.3) -- temps de retour selon device
                 else
                     humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 3, 0)
-                    task.wait(1.5) -- délai un peu plus long
+                    task.wait(1.5)
                 end
             else
                 task.wait(1)
