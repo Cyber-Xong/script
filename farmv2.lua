@@ -93,53 +93,43 @@ end
     -------------------
     -- Fuir le Tueur
     -------------------
-    local fleeTask
-
-function startFlee()
-    if fleeTask then return end
-    _G.FuirTueur = true
-
-    fleeTask = RunService.Heartbeat:Connect(function()
-        if not _G.FuirTueur then
-            fleeTask:Disconnect()
-            fleeTask = nil
-            return
-        end
-
-        if not humPart or not map then return end
-
-        local murdererHRP
-        for _, pl in pairs(Players:GetPlayers()) do
-            if pl ~= LocalPlayer and pl.Character then
-                local knife = pl.Backpack:FindFirstChild("Knife") or pl.Character:FindFirstChild("Knife")
-                if knife then
-                    murdererHRP = pl.Character:FindFirstChild("HumanoidRootPart")
-                    break
+        local fleeTask
+    function startFlee()
+        if fleeTask then return end
+        fleeTask = RunService.Heartbeat:Connect(function()
+            if not _G.FuirTueur or not humPart or not map then return end
+    
+            local murdererHRP
+            for _, pl in pairs(Players:GetPlayers()) do
+                if pl ~= LocalPlayer and pl.Character then
+                    local knife = pl.Backpack:FindFirstChild("Knife") or pl.Character:FindFirstChild("Knife")
+                    if knife then
+                        murdererHRP = pl.Character:FindFirstChild("HumanoidRootPart")
+                        break
+                    end
                 end
             end
-        end
-
-        if murdererHRP then
-            local dist = (humPart.Position - murdererHRP.Position).Magnitude
-            if dist < 30 then -- distance de détection plus large
-                local fleeDir = (humPart.Position - murdererHRP.Position).Unit
-                local fleePos = humPart.Position + fleeDir * math.clamp(40 - dist, 20, 40)
-
-                -- déplacement fluide
-                humPart.CFrame = humPart.CFrame:Lerp(
-                    CFrame.new(fleePos.X, humPart.Position.Y, fleePos.Z),
-                    0.25 -- vitesse de fuite (0.1 = lent, 1 = TP direct)
-                )
+    
+            if murdererHRP then
+                local dist = (humPart.Position - murdererHRP.Position).Magnitude
+                if dist < 15 then
+                    -- Direction opposée au tueur
+                    local fleeDir = (humPart.Position - murdererHRP.Position).Unit
+                    local targetPos = humPart.Position + fleeDir * 20
+    
+                    -- Smooth Lerp vers la nouvelle position
+                    humPart.CFrame = humPart.CFrame:Lerp(
+                        CFrame.new(targetPos.X, humPart.Position.Y, targetPos.Z),
+                        0.25 -- facteur "smoothness" (0.1 lent, 1.0 instant)
+                    )
+                end
             end
-        end
-    end)
-end
-
-function stopFlee()
-    _G.FuirTueur = false
-    if fleeTask then fleeTask:Disconnect() fleeTask = nil end
-end
-
+        end)
+    end
+    
+    function stopFlee()
+        if fleeTask then fleeTask:Disconnect() fleeTask = nil end
+    end
 
     -------------------
     -- Track Roles
@@ -192,74 +182,74 @@ end
     -------------------
     local pickGunTask
 
-function startPickGun()
-    if pickGunTask then return end
-    _G.PickGun = true
-    pickGunTask = task.spawn(function()
-        while _G.PickGun do
-            if humPart then
-                local gun = workspace:FindFirstChild("GunDrop", true)
-                if gun and gun:IsA("Part") then
-                    -- Téléportation au gun
-                    humPart.CFrame = CFrame.new(gun.Position + Vector3.new(0, 2, 0))
-                    
-                    -- Simulation de "pickup"
-                    firetouchinterest(humPart, gun, 0)
-                    firetouchinterest(humPart, gun, 1)
-                    
-                    task.wait(0.5)
+    function startPickGun()
+        if pickGunTask then return end
+        _G.PickGun = true
+        pickGunTask = task.spawn(function()
+            while _G.PickGun do
+                if humPart then
+                    local gun = workspace:FindFirstChild("GunDrop", true)
+                    if gun and gun:IsA("Part") then
+                        -- Téléportation au gun
+                        humPart.CFrame = CFrame.new(gun.Position + Vector3.new(0, 2, 0))
+                        
+                        -- Simulation de "pickup"
+                        firetouchinterest(humPart, gun, 0)
+                        firetouchinterest(humPart, gun, 1)
+                        
+                        task.wait(0.5)
+                    else
+                        -- Pas de gun trouvé
+                        task.wait(1)
+                    end
                 else
-                    -- Pas de gun trouvé
                     task.wait(1)
                 end
-            else
-                task.wait(1)
             end
-        end
-        pickGunTask = nil
-    end)
-end
-
-function stopPickGun()
-    _G.PickGun = false
-    if pickGunTask then
-        task.cancel(pickGunTask) -- stop propre
-        pickGunTask = nil
+            pickGunTask = nil
+        end)
     end
-end
+
+    function stopPickGun()
+        _G.PickGun = false
+        if pickGunTask then
+            task.cancel(pickGunTask) -- stop propre
+            pickGunTask = nil
+        end
+    end
 
 
     -------------------
     -- NoClip
     -------------------
     local noclipConnection
-local function setNoClip(state)
-    if state then
-        noclipConnection = RunService.Stepped:Connect(function()
-            if character and humPart then
-                for _, part in pairs(character:GetDescendants()) do
-                    if part:IsA("BasePart") and part.CanCollide == true then
-                        part.CanCollide = false
+    local function setNoClip(state)
+        if state then
+            noclipConnection = RunService.Stepped:Connect(function()
+                if character and humPart then
+                    for _, part in pairs(character:GetDescendants()) do
+                        if part:IsA("BasePart") and part.CanCollide == true then
+                            part.CanCollide = false
+                        end
                     end
                 end
+            end)
+        else
+            if noclipConnection then 
+                noclipConnection:Disconnect() 
+                noclipConnection = nil 
             end
-        end)
-    else
-        if noclipConnection then 
-            noclipConnection:Disconnect() 
-            noclipConnection = nil 
-        end
-        -- Réactiver les collisions correctement
-        if character then
-            for _, part in pairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
+            -- Réactiver les collisions correctement
+            if character then
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
                 end
             end
         end
     end
-end
-
+    
 
     -------------------
     -- Multiple Jump
@@ -273,6 +263,26 @@ end
             end
         end
     end)
+    -------------------
+    -- Multiple Jump
+    -------------------
+        _G.PlayerSpeed = 16 -- vitesse normale Roblox
+
+    local function setSpeed(value)
+        _G.PlayerSpeed = value
+        if character and character:FindFirstChild("Humanoid") then
+            character.Humanoid.WalkSpeed = _G.PlayerSpeed
+        end
+    end
+
+    -- Mettre à jour la vitesse quand le perso respawn
+    LocalPlayer.CharacterAdded:Connect(function(char)
+        character = char
+        humPart = char:WaitForChild("HumanoidRootPart")
+        local hum = char:WaitForChild("Humanoid")
+        hum.WalkSpeed = _G.PlayerSpeed
+    end)
+
 
     -------------------
     -- TP Lobby
@@ -310,16 +320,16 @@ end
     -- Anti AFK
     -------------------
     local antiAfkActive = false
-local function antiAfk()
-    if antiAfkActive then return end
-    antiAfkActive = true
-    LocalPlayer.Idled:Connect(function()
-        local vu = game:GetService("VirtualUser")
-        vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    end)
-end
+    local function antiAfk()
+        if antiAfkActive then return end
+        antiAfkActive = true
+        LocalPlayer.Idled:Connect(function()
+            local vu = game:GetService("VirtualUser")
+            vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            task.wait(1)
+            vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        end)
+    end
     -------------------
     -- UI
     -------------------
@@ -333,6 +343,8 @@ end
     w:Toggle("🔫 Pick Gun", false, function(v) _G.PickGun = v if v then startPickGun() else stopPickGun() end end)
     w:Toggle("🚪 NoClip", false, function(v) setNoClip(v) end)
     w:Toggle("🌀 Multiple Jump", false, function(v) multiJump = v end)
+    w:Section("Vitesse") w:Slider("Player Speed", { min = 16, max = 100, default = 16 }, function(val) setSpeed(val) end)
+
 
     -- Boutons
     w:Button("📌 TP to Lobby", function() tpLobby() end)
