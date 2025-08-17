@@ -313,16 +313,9 @@ end
         end)
     end
 
-    -- Initialisation des variables globales pour éviter les erreurs
-    _G.Farm = _G.Farm or false
-    _G.GodMode = _G.GodMode or false
-    _G.FuirTueur = _G.FuirTueur or false
-    _G.TrackRoles = _G.TrackRoles or false
-    _G.PickGun = _G.PickGun or false
-
-        
-    local PlayerTab = w:Tab("Player")
     
+    local PlayerTab = w:Tab("Player")
+
     PlayerTab:Slider("Player Speed", { min = 16, max = 100, default = 16 }, function(val) 
         setSpeed(val) 
     end)
@@ -330,6 +323,14 @@ end
     PlayerTab:Toggle("Multiple Jump", function(state)
         _G.MultipleJump = state
     end)
+
+
+    -- Initialisation des variables globales pour éviter les erreurs
+    _G.Farm = _G.Farm or false
+    _G.GodMode = _G.GodMode or false
+    _G.FuirTueur = _G.FuirTueur or false
+    _G.TrackRoles = _G.TrackRoles or false
+    _G.PickGun = _G.PickGun or false
 
 
     -------------------
