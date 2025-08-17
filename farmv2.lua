@@ -57,13 +57,13 @@ pcall(function()
                     humPart.CFrame = coinToCollect.CFrame
                     task.wait(1.3) -- plus lent pour éviter les lags
                     humPart.CFrame = CFrame.new(132, 140, 60)
-                    task.wait(1) -- temps de retour augmenté
+                    task.wait(1.2) -- temps de retour augmenté
                 else
                     humPart.CFrame = CFrame.new(132, 140, 60)
-                    task.wait(1) -- délai un peu plus long
+                    task.wait(1.2) -- délai un peu plus long
                 end
             else
-                task.wait(1)
+                task.wait(1.2)
             end
         end
     end)
@@ -264,25 +264,25 @@ end
         end
     end)
     -------------------
-    -- Multiple Jump
+    -- Vitesse du perso
     -------------------
-        _G.PlayerSpeed = 16 -- vitesse normale Roblox
-
+    -- Player Speed (fusion propre avec respawn)
+    _G.PlayerSpeed = 16 -- vitesse par défaut
+    
     local function setSpeed(value)
         _G.PlayerSpeed = value
         if character and character:FindFirstChild("Humanoid") then
             character.Humanoid.WalkSpeed = _G.PlayerSpeed
         end
     end
-
-    -- Mettre à jour la vitesse quand le perso respawn
+    
+    -- Gestion respawn (fusionné)
     LocalPlayer.CharacterAdded:Connect(function(char)
         character = char
         humPart = char:WaitForChild("HumanoidRootPart")
         local hum = char:WaitForChild("Humanoid")
         hum.WalkSpeed = _G.PlayerSpeed
     end)
-
 
     -------------------
     -- TP Lobby
@@ -343,7 +343,10 @@ end
     w:Toggle("🔫 Pick Gun", false, function(v) _G.PickGun = v if v then startPickGun() else stopPickGun() end end)
     w:Toggle("🚪 NoClip", false, function(v) setNoClip(v) end)
     w:Toggle("🌀 Multiple Jump", false, function(v) multiJump = v end)
-    w:Section("Vitesse") w:Slider("Player Speed", { min = 16, max = 100, default = 16 }, function(val) setSpeed(val) end)
+    w:Section("Vitesse") 
+    w:Slider("Player Speed", { min = 16, max = 100, default = 16 }, function(val) 
+        setSpeed(val) 
+    end)
 
 
     -- Boutons
