@@ -36,7 +36,7 @@ pcall(function()
     task.spawn(function()
         while _G.Farm do
             if not character or not humPart then
-                task.wait(0.8) -- un peu plus long pour mobile
+                task.wait(1) -- un peu plus long pour mobile
                 character = LocalPlayer.Character
                 humPart = character and character:FindFirstChild("HumanoidRootPart")
             end
@@ -57,7 +57,7 @@ pcall(function()
                     humPart.CFrame = coinToCollect.CFrame
                     task.wait(1.3) -- plus lent pour éviter les lags
                     humPart.CFrame = CFrame.new(132, 140, 60)
-                    task.wait(1) -- temps de retour augmenté
+                    task.wait(1.5) -- temps de retour augmenté
                 else
                     humPart.CFrame = CFrame.new(132, 140, 60)
                     task.wait(1) -- délai un peu plus long
@@ -93,11 +93,20 @@ end
     -------------------
     -- Fuir le Tueur
     -------------------
-        local fleeTask
+    local fleeTask
+
     function startFlee()
         if fleeTask then return end
+        _G.FuirTueur = true
+    
         fleeTask = RunService.Heartbeat:Connect(function()
-            if not _G.FuirTueur or not humPart or not map then return end
+            if not _G.FuirTueur then
+                fleeTask:Disconnect()
+                fleeTask = nil
+                return
+            end
+    
+            if not humPart or not map then return end
     
             local murdererHRP
             for _, pl in pairs(Players:GetPlayers()) do
@@ -112,15 +121,14 @@ end
     
             if murdererHRP then
                 local dist = (humPart.Position - murdererHRP.Position).Magnitude
-                if dist < 15 then
-                    -- Direction opposée au tueur
+                if dist < 30 then -- distance de détection plus large
                     local fleeDir = (humPart.Position - murdererHRP.Position).Unit
-                    local targetPos = humPart.Position + fleeDir * 20
+                    local fleePos = humPart.Position + fleeDir * math.clamp(40 - dist, 20, 40)
     
-                    -- Smooth Lerp vers la nouvelle position
+                    -- déplacement fluide
                     humPart.CFrame = humPart.CFrame:Lerp(
-                        CFrame.new(targetPos.X, humPart.Position.Y, targetPos.Z),
-                        0.25 -- facteur "smoothness" (0.1 lent, 1.0 instant)
+                        CFrame.new(fleePos.X, humPart.Position.Y, fleePos.Z),
+                        0.25 -- vitesse de fuite (0.1 = lent, 1 = TP direct)
                     )
                 end
             end
@@ -128,8 +136,10 @@ end
     end
     
     function stopFlee()
+        _G.FuirTueur = false
         if fleeTask then fleeTask:Disconnect() fleeTask = nil end
     end
+
 
     -------------------
     -- Track Roles
@@ -263,7 +273,27 @@ end
             end
         end
     end)
-   
+    -------------------
+    -- Multiple Jump
+    -------------------
+        _G.PlayerSpeed = 16 -- vitesse normale Roblox
+
+    local function setSpeed(value)
+        _G.PlayerSpeed = value
+        if character and character:FindFirstChild("Humanoid") then
+            character.Humanoid.WalkSpeed = _G.PlayerSpeed
+        end
+    end
+
+    -- Mettre à jour la vitesse quand le perso respawn
+    LocalPlayer.CharacterAdded:Connect(function(char)
+        character = char
+        humPart = char:WaitForChild("HumanoidRootPart")
+        local hum = char:WaitForChild("Humanoid")
+        hum.WalkSpeed = _G.PlayerSpeed
+    end)
+
+
     -------------------
     -- TP Lobby
     -------------------
@@ -323,13 +353,13 @@ end
     w:Toggle("🔫 Pick Gun", false, function(v) _G.PickGun = v if v then startPickGun() else stopPickGun() end end)
     w:Toggle("🚪 NoClip", false, function(v) setNoClip(v) end)
     w:Toggle("🌀 Multiple Jump", false, function(v) multiJump = v end)
+    w:Section("Vitesse") w:Slider("Player Speed", { min = 16, max = 100, default = 16 }, function(val) setSpeed(val) end)
+
 
     -- Boutons
-    local s = w:Section("Main") -- Crée une section
-    s:Button("📌 TP to Lobby", function() tpLobby() end)
-    s:Button("📌 TP to Random inno", function() tpRandomInnocent() end)
-    s:Button("🕹️ Anti-AFK", function() antiAfk() end)
-
+    w:Button("📌 TP to Lobby", function() tpLobby() end)
+    w:Button("📌 TP to Random inno", function() tpRandomInnocent() end)
+    w:Button("🕹️ Anti-AFK", function() antiAfk() end)
 
     -- Label
     w:Label("🌀 made by CSA-Studio 🌀" , Color3.fromRGB(255,255,255))
