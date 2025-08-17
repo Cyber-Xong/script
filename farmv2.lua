@@ -29,27 +29,7 @@ pcall(function()
         humPart = char:WaitForChild("HumanoidRootPart")
     end)
 
-    -- vitesse par défaut
-    _G.PlayerSpeed = 16  
     
-    local function setSpeed(value)
-        _G.PlayerSpeed = value
-        local character = Players.LocalPlayer.Character
-        if character then
-            local hum = character:FindFirstChildOfClass("Humanoid")
-            if hum then
-                hum.WalkSpeed = _G.PlayerSpeed
-            end
-        end
-    end
-    
-    -- garder la vitesse après respawn
-    Players.LocalPlayer.CharacterAdded:Connect(function(char)
-        local hum = char:WaitForChild("Humanoid")
-        hum.WalkSpeed = _G.PlayerSpeed
-    end)
-
-
     -------------------
     -- AutoFarm
     -------------------
@@ -340,6 +320,18 @@ end
     _G.TrackRoles = _G.TrackRoles or false
     _G.PickGun = _G.PickGun or false
 
+        
+    local PlayerTab = w:Tab("Player")
+    
+    PlayerTab:Slider("Player Speed", { min = 16, max = 100, default = 16 }, function(val) 
+        setSpeed(val) 
+    end)
+    
+    PlayerTab:Toggle("Multiple Jump", function(state)
+        _G.MultipleJump = state
+    end)
+
+
     -------------------
     -- UI
     -------------------
@@ -355,8 +347,9 @@ end
     w:Toggle("🌀 Multiple Jump", false, function(v) multiJump = v end)
     w:Section("Vitesse") 
     w:Slider("Player Speed", { min = 16, max = 100, default = 16 }, function(val) 
-        setSpeed(val) 
+    setSpeed(val) 
     end)
+
 
 
     -- Boutons
