@@ -263,26 +263,7 @@ end
             end
         end
     end)
-    -------------------
-    -- Multiple Jump
-    -------------------
-
-    local function setSpeed(value)
-        _G.PlayerSpeed = value
-        if character and character:FindFirstChild("Humanoid") then
-            character.Humanoid.WalkSpeed = _G.PlayerSpeed
-        end
-    end
-
-    -- Mettre à jour la vitesse quand le perso respawn
-    LocalPlayer.CharacterAdded:Connect(function(char)
-        character = char
-        humPart = char:WaitForChild("HumanoidRootPart")
-        local hum = char:WaitForChild("Humanoid")
-        hum.WalkSpeed = _G.PlayerSpeed
-    end)
-
-
+   
     -------------------
     -- TP Lobby
     -------------------
@@ -342,8 +323,6 @@ end
     w:Toggle("🔫 Pick Gun", false, function(v) _G.PickGun = v if v then startPickGun() else stopPickGun() end end)
     w:Toggle("🚪 NoClip", false, function(v) setNoClip(v) end)
     w:Toggle("🌀 Multiple Jump", false, function(v) multiJump = v end)
-    w:Section("Vitesse") w:Slider("Player Speed", { min = 16, max = 100, default = 16 }, function(val) setSpeed(val) end)
-
 
     -- Boutons
     w:Button("📌 TP to Lobby", function() tpLobby() end)
