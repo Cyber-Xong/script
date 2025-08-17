@@ -1,4 +1,4 @@
-pcall(function()
+non je crois y a un probleme mais je sais pas a quel moment pcall(function()
     repeat task.wait() until game:IsLoaded()
 
     local Players = game:GetService("Players")
@@ -10,9 +10,7 @@ pcall(function()
     local map
     local antiAfkActive = false
 
-    -------------------
-    -- Map Update
-    -------------------
+    -- Update map
     local function updateMap()
         for _, m in ipairs(workspace:GetChildren()) do
             if m:IsA("Model") and m:GetAttribute("MapID") then
@@ -23,61 +21,57 @@ pcall(function()
     end
     updateMap()
     workspace.DescendantAdded:Connect(updateMap)
-    workspace.DescendantRemoving:Connect(function(m)
-        if m == map then map = nil end
-    end)
+    workspace.DescendantRemoving:Connect(function(m) if m == map then map = nil end end)
 
-    -------------------
-    -- Respawn Gestion
-    -------------------
+    -- Respawn gestion
     LocalPlayer.CharacterAdded:Connect(function(char)
         character = char
         humPart = char:WaitForChild("HumanoidRootPart")
     end)
 
     -------------------
-    -- AutoFarm BeachBalls
+    -- AutoFarm
     -------------------
     function startAutoFarm()
-        task.spawn(function()
-            while _G.Farm do
-                if not character or not humPart then
-                    task.wait(0.9)
-                    character = LocalPlayer.Character
-                    humPart = character and character:FindFirstChild("HumanoidRootPart")
-                end
+    task.spawn(function()
+        while _G.Farm do
+            if not character or not humPart then
+                task.wait(0.8) -- un peu plus long pour mobile
+                character = LocalPlayer.Character
+                humPart = character and character:FindFirstChild("HumanoidRootPart")
+            end
 
-                if map and map:FindFirstChild("CoinContainer") then
-                    local coinToCollect
-                    for _, coin in ipairs(map.CoinContainer:GetChildren()) do
-                        if coin:IsA("Part") and coin.Name == "Coin_Server" and coin:GetAttribute("CoinID") == "BeachBall" then
-                            local cv = coin:FindFirstChild("CoinVisual")
-                            if cv and cv.Transparency ~= 1 then
-                                coinToCollect = coin
-                                break
-                            end
+            if map and map:FindFirstChild("CoinContainer") then
+                local coinToCollect
+                for _, coin in ipairs(map.CoinContainer:GetChildren()) do
+                    if coin:IsA("Part") and coin.Name == "Coin_Server" and coin:GetAttribute("CoinID") == "BeachBall" then
+                        local cv = coin:FindFirstChild("CoinVisual")
+                        if cv and cv.Transparency ~= 1 then
+                            coinToCollect = coin
+                            break
                         end
                     end
-
-                    if coinToCollect and humPart then
-                        humPart.CFrame = coinToCollect.CFrame
-                        task.wait(1.3)
-                        humPart.CFrame = CFrame.new(132, 140, 60)
-                        task.wait(1.3)
-                    else
-                        humPart.CFrame = CFrame.new(132, 140, 60)
-                        task.wait(1.3)
-                    end
-                else
-                    task.wait(1.3)
                 end
-            end
-        end)
-    end
 
-    function stopAutoFarm()
-        _G.Farm = false
-    end
+                if coinToCollect and humPart then
+                    humPart.CFrame = coinToCollect.CFrame
+                    task.wait(1.3) -- plus lent pour éviter les lags
+                    humPart.CFrame = CFrame.new(132, 140, 60)
+                    task.wait(1) -- temps de retour augmenté
+                else
+                    humPart.CFrame = CFrame.new(132, 140, 60)
+                    task.wait(1) -- délai un peu plus long
+                end
+            else
+                task.wait(1)
+            end
+        end
+    end)
+end
+
+function stopAutoFarm()
+    _G.Farm = false
+end
 
     -------------------
     -- God Mode
@@ -99,12 +93,12 @@ pcall(function()
     -------------------
     -- Fuir le Tueur
     -------------------
-    local fleeTask
+        local fleeTask
     function startFlee()
         if fleeTask then return end
         fleeTask = RunService.Heartbeat:Connect(function()
             if not _G.FuirTueur or not humPart or not map then return end
-
+    
             local murdererHRP
             for _, pl in pairs(Players:GetPlayers()) do
                 if pl ~= LocalPlayer and pl.Character then
@@ -115,21 +109,24 @@ pcall(function()
                     end
                 end
             end
-
+    
             if murdererHRP then
                 local dist = (humPart.Position - murdererHRP.Position).Magnitude
                 if dist < 15 then
+                    -- Direction opposée au tueur
                     local fleeDir = (humPart.Position - murdererHRP.Position).Unit
                     local targetPos = humPart.Position + fleeDir * 20
+    
+                    -- Smooth Lerp vers la nouvelle position
                     humPart.CFrame = humPart.CFrame:Lerp(
                         CFrame.new(targetPos.X, humPart.Position.Y, targetPos.Z),
-                        0.25
+                        0.25 -- facteur "smoothness" (0.1 lent, 1.0 instant)
                     )
                 end
             end
         end)
     end
-
+    
     function stopFlee()
         if fleeTask then fleeTask:Disconnect() fleeTask = nil end
     end
@@ -140,16 +137,14 @@ pcall(function()
     local highlights = {}
     local rolesTask
     local function createHighlight(player, color)
-        if player.Character then
-            local highlight = Instance.new("Highlight")
-            highlight.Name = "RoleAura"
-            highlight.FillColor = color
-            highlight.FillTransparency = 0.3
-            highlight.OutlineTransparency = 1
-            highlight.Adornee = player.Character
-            highlight.Parent = player.Character
-            highlights[player] = highlight
-        end
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "RoleAura"
+        highlight.FillColor = color
+        highlight.FillTransparency = 0.3
+        highlight.OutlineTransparency = 1
+        highlight.Adornee = player.Character
+        highlight.Parent = player.Character
+        highlights[player] = highlight
     end
     local function clearHighlights()
         for _, hl in pairs(highlights) do if hl and hl.Parent then hl:Destroy() end end
@@ -164,12 +159,13 @@ pcall(function()
                     if player ~= LocalPlayer and player.Character then
                         local hasGun = player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun")
                         local hasKnife = player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife")
+
                         if hasKnife then
-                            createHighlight(player, Color3.fromRGB(255,0,0))
+                            createHighlight(player, Color3.fromRGB(255,0,0)) -- Murder
                         elseif hasGun then
-                            createHighlight(player, Color3.fromRGB(0,120,255))
+                            createHighlight(player, Color3.fromRGB(0,120,255)) -- Sheriff
                         else
-                            createHighlight(player, Color3.fromRGB(255,255,255))
+                            createHighlight(player, Color3.fromRGB(255,255,255)) -- Innocent
                         end
                     end
                 end
@@ -179,16 +175,13 @@ pcall(function()
             rolesTask = nil
         end)
     end
-    function stopScanRoles()
-        _G.TrackRoles = false
-        clearHighlights()
-        rolesTask = nil
-    end
+    function stopScanRoles() _G.TrackRoles = false clearHighlights() rolesTask = nil end
 
     -------------------
     -- Pick Gun
     -------------------
     local pickGunTask
+
     function startPickGun()
         if pickGunTask then return end
         _G.PickGun = true
@@ -197,11 +190,16 @@ pcall(function()
                 if humPart then
                     local gun = workspace:FindFirstChild("GunDrop", true)
                     if gun and gun:IsA("Part") then
-                        humPart.CFrame = CFrame.new(gun.Position + Vector3.new(0,2,0))
+                        -- Téléportation au gun
+                        humPart.CFrame = CFrame.new(gun.Position + Vector3.new(0, 2, 0))
+                        
+                        -- Simulation de "pickup"
                         firetouchinterest(humPart, gun, 0)
                         firetouchinterest(humPart, gun, 1)
+                        
                         task.wait(0.5)
                     else
+                        -- Pas de gun trouvé
                         task.wait(1)
                     end
                 else
@@ -211,13 +209,15 @@ pcall(function()
             pickGunTask = nil
         end)
     end
+
     function stopPickGun()
         _G.PickGun = false
         if pickGunTask then
-            task.cancel(pickGunTask)
+            task.cancel(pickGunTask) -- stop propre
             pickGunTask = nil
         end
     end
+
 
     -------------------
     -- NoClip
@@ -228,17 +228,18 @@ pcall(function()
             noclipConnection = RunService.Stepped:Connect(function()
                 if character and humPart then
                     for _, part in pairs(character:GetDescendants()) do
-                        if part:IsA("BasePart") then
+                        if part:IsA("BasePart") and part.CanCollide == true then
                             part.CanCollide = false
                         end
                     end
                 end
             end)
         else
-            if noclipConnection then
-                noclipConnection:Disconnect()
-                noclipConnection = nil
+            if noclipConnection then 
+                noclipConnection:Disconnect() 
+                noclipConnection = nil 
             end
+            -- Réactiver les collisions correctement
             if character then
                 for _, part in pairs(character:GetDescendants()) do
                     if part:IsA("BasePart") then
@@ -248,6 +249,7 @@ pcall(function()
             end
         end
     end
+    
 
     -------------------
     -- Multiple Jump
@@ -261,164 +263,94 @@ pcall(function()
             end
         end
     end)
+    -------------------
+    -- Multiple Jump
+    -------------------
+        _G.PlayerSpeed = 16 -- vitesse normale Roblox
 
-    -------------------
-    -- Player Speed
-    -------------------
-    local function setSpeed(speed)
+    local function setSpeed(value)
+        _G.PlayerSpeed = value
         if character and character:FindFirstChild("Humanoid") then
-            character.Humanoid.WalkSpeed = speed
+            character.Humanoid.WalkSpeed = _G.PlayerSpeed
         end
     end
 
-    Players.LocalPlayer.CharacterAdded:Connect(function(char)
+    -- Mettre à jour la vitesse quand le perso respawn
+    LocalPlayer.CharacterAdded:Connect(function(char)
         character = char
+        humPart = char:WaitForChild("HumanoidRootPart")
         local hum = char:WaitForChild("Humanoid")
-        hum.WalkSpeed = _G.PlayerSpeed or 16
+        hum.WalkSpeed = _G.PlayerSpeed
     end)
+
 
     -------------------
     -- TP Lobby
     -------------------
     local function tpLobby()
         if character and humPart then
-            humPart.CFrame = CFrame.new(132,140,60)
+            humPart.CFrame = CFrame.new(132, 140, 60)
         end
     end
 
     -------------------
-    -- TP Random Innocent
+    -- TP Map (vers un innocent random)
     -------------------
     local function tpRandomInnocent()
         local candidates = {}
         for _, pl in pairs(Players:GetPlayers()) do
-            if pl ~= LocalPlayer and pl.Team == LocalPlayer.Team and pl.Character then
-                table.insert(candidates, pl)
+            if pl ~= LocalPlayer and pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") then
+                local hasGun = pl.Backpack:FindFirstChild("Gun") or pl.Character:FindFirstChild("Gun")
+                local hasKnife = pl.Backpack:FindFirstChild("Knife") or pl.Character:FindFirstChild("Knife")
+                if not hasGun and not hasKnife then
+                    table.insert(candidates, pl)
+                end
             end
         end
         if #candidates > 0 then
-            local target = candidates[math.random(1,#candidates)]
-            if target.Character and target.Character:FindFirstChild("HumanoidRootPart") and humPart then
-                humPart.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
+            local target = candidates[math.random(1, #candidates)]
+            local targetHRP = target.Character:FindFirstChild("HumanoidRootPart")
+            if targetHRP and humPart then
+                humPart.CFrame = targetHRP.CFrame * CFrame.new(3, 0, 0)
             end
         end
     end
 
     -------------------
-    -- Anti-AFK
+    -- Anti AFK
     -------------------
-    if not antiAfkActive then
+    local antiAfkActive = false
+    local function antiAfk()
+        if antiAfkActive then return end
         antiAfkActive = true
-        for _, conn in pairs(getconnections or function() return {} end)(Players.LocalPlayer.Idled) do
-            conn:Disable()
-        end
+        LocalPlayer.Idled:Connect(function()
+            local vu = game:GetService("VirtualUser")
+            vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            task.wait(1)
+            vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        end)
     end
+    -------------------
+    -- UI
+    -------------------
+    local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Turtle-Brand/Turtle-Lib/main/source.lua"))()
+    local w = lib:Window("MM2 Summer Full Script", Color3.fromRGB(238, 130, 238))
 
-    print("Script MM2 Summer chargé avec succès !")
-end)
+    w:Toggle("🎈 AutoFarm BeachBalls", false, function(v) _G.Farm = v if v then startAutoFarm() else stopAutoFarm() end end)
+    w:Toggle("💪 2 Life", false, function(v) _G.GodMode = v if v then setupGodMode() else stopGodMode() end end)
+    w:Toggle("🏃‍♂️ Fuir le Tueur", false , function(v) _G.FuirTueur = v if v then startFlee() else stopFlee() end end)
+    w:Toggle("🔍 Track Roles", false, function(v) _G.TrackRoles = v if v then startScanRoles() else stopScanRoles() end end)
+    w:Toggle("🔫 Pick Gun", false, function(v) _G.PickGun = v if v then startPickGun() else stopPickGun() end end)
+    w:Toggle("🚪 NoClip", false, function(v) setNoClip(v) end)
+    w:Toggle("🌀 Multiple Jump", false, function(v) multiJump = v end)
+    w:Section("Vitesse") w:Slider("Player Speed", { min = 16, max = 100, default = 16 }, function(val) setSpeed(val) end)
 
 
+    -- Boutons
+    w:Button("📌 TP to Lobby", function() tpLobby() end)
+    w:Button("📌 TP to Random inno", function() tpRandomInnocent() end)
+    w:Button("🕹️ Anti-AFK", function() antiAfk() end)
 
--- Vérifie si l'UI existe déjà
-if game.CoreGui:FindFirstChild("MM2SummerUI") then
-    game.CoreGui:FindFirstChild("MM2SummerUI"):Destroy()
-end
-
--- Crée la ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MM2SummerUI"
-screenGui.Parent = game.CoreGui
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
--- Crée le cadre principal
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 300)
-frame.Position = UDim2.new(0, 10, 0, 50)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 0
-frame.Parent = screenGui
-
--- Titre
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundTransparency = 1
-title.Text = "MM2 Summer Script"
-title.TextColor3 = Color3.fromRGB(255,255,255)
-title.TextScaled = true
-title.Parent = frame
-
--- Fonction pour créer des boutons
-local function createButton(name, y, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -10, 0, 30)
-    btn.Position = UDim2.new(0, 5, 0, y)
-    btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    btn.BorderSizePixel = 0
-    btn.TextColor3 = Color3.fromRGB(255,255,255)
-    btn.Text = name
-    btn.TextScaled = true
-    btn.Parent = frame
-    btn.MouseButton1Click:Connect(callback)
-end
-
--- Boutons
-createButton("AutoFarm BeachBalls", 40, function()
-    _G.Farm = not _G.Farm
-    if _G.Farm then
-        print("AutoFarm activé")
-        task.spawn(startAutoFarm)
-    else
-        print("AutoFarm désactivé")
-        stopAutoFarm()
-    end
-end)
-
-createButton("God Mode", 80, function()
-    _G.GodMode = not _G.GodMode
-    if _G.GodMode then
-        print("God Mode activé")
-        setupGodMode()
-    else
-        print("God Mode désactivé")
-        stopGodMode()
-    end
-end)
-
-createButton("Fuir Murder", 120, function()
-    _G.FuirTueur = not _G.FuirTueur
-    if _G.FuirTueur then
-        print("Fuite activée")
-        startFlee()
-    else
-        print("Fuite désactivée")
-        stopFlee()
-    end
-end)
-
-createButton("Pick Gun", 160, function()
-    _G.PickGun = not _G.PickGun
-    if _G.PickGun then
-        print("Pick Gun activé")
-        startPickGun()
-    else
-        print("Pick Gun désactivé")
-        stopPickGun()
-    end
-end)
-
-createButton("NoClip", 200, function()
-    _G.NoClip = not _G.NoClip
-    setNoClip(_G.NoClip)
-    print("NoClip " .. (_G.NoClip and "activé" or "désactivé"))
-end)
-
-createButton("Scan Roles", 240, function()
-    _G.TrackRoles = not _G.TrackRoles
-    if _G.TrackRoles then
-        startScanRoles()
-        print("Scan Roles activé")
-    else
-        stopScanRoles()
-        print("Scan Roles désactivé")
-    end
+    -- Label
+    w:Label("🌀 made by CSA-Studio 🌀" , Color3.fromRGB(255,255,255))
 end)
