@@ -89,6 +89,31 @@ pcall(function()
     end
 
     -------------------
+    -- God Mode (2 Life)
+    -------------------
+    local godModeConnection
+    
+    function setupGodMode()
+        local humanoid = character:WaitForChild("Humanoid")
+        if godModeConnection then 
+            godModeConnection:Disconnect() 
+        end
+        godModeConnection = humanoid.HealthChanged:Connect(function()
+            if humanoid.Health < humanoid.MaxHealth and _G.GodMode then
+                humanoid.Health = humanoid.MaxHealth
+            end
+        end)
+    end
+    
+    function stopGodMode()
+        if godModeConnection then 
+            godModeConnection:Disconnect() 
+            godModeConnection = nil 
+        end
+    end
+
+
+    -------------------
     -- Fuir le Tueur
     -------------------
     local fleeTask
@@ -219,6 +244,7 @@ pcall(function()
     local w = lib:Window("🏐 beachball farm V2.2 🏖️", Color3.fromRGB(238,130,238))
 
     w:Toggle("🎈 AutoFarm BeachBalls", false, function(v) _G.Farm = v if v then startAutoFarm() else stopAutoFarm() end end)
+    w:Toggle("💪 2 Life", false, function(v) _G.GodMode = v if v then setupGodMode() else stopGodMode() end end)
     w:Toggle("🏃‍♂️ Flee the killer", false, function(v) _G.FuirTueur = v if v then startFlee() else stopFlee() end end)
     w:Toggle("🔍 Track Roles", false, function(v) _G.TrackRoles = v if v then startScanRoles() else stopScanRoles() end end)
     w:Button("📌 TP to Lobby", tpLobby)
