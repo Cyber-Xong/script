@@ -59,7 +59,7 @@ function startAutoFarm()
                     -- choisir une pièce aléatoire
                     local coinToCollect = validCoins[math.random(1, #validCoins)]
                     humPart.CFrame = coinToCollect.CFrame
-                    task.wait(isMobile and 1.5 or 0.7) -- temps de ramassage selon device
+                    task.wait(isMobile and 1.6 or 0.9) -- temps de ramassage selon device
                     humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 4, 0) -- retour
                     task.wait(isMobile and 1.6 or 1.3) -- temps de retour selon device
                 else
@@ -126,14 +126,14 @@ end
     
             if murdererHRP then
                 local dist = (humPart.Position - murdererHRP.Position).Magnitude
-                if dist < 30 then -- distance de détection plus large
+                if dist < 20 then -- distance de détection plus large
                     local fleeDir = (humPart.Position - murdererHRP.Position).Unit
                     local fleePos = humPart.Position + fleeDir * math.clamp(40 - dist, 20, 40)
     
                     -- déplacement fluide
                     humPart.CFrame = humPart.CFrame:Lerp(
                         CFrame.new(fleePos.X, humPart.Position.Y, fleePos.Z),
-                        0.25 -- vitesse de fuite (0.1 = lent, 1 = TP direct)
+                        0.2 -- vitesse de fuite (0.1 = lent, 1 = TP direct)
                     )
                 end
             end
