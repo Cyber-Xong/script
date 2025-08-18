@@ -370,7 +370,7 @@ pcall(function()
         equipTool(knife)
         for _,pl in ipairs(Players:GetPlayers()) do
             if pl ~= LocalPlayer and pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") then
-                hrp.CFrame = pl.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,0.5)
+                hrp.CFrame = pl.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,0.25)
                 centerClick()
                 task.wait(0.4)
             end
