@@ -43,47 +43,48 @@ pcall(function()
     -------------------
     -- AutoFarm
     -------------------
-    local isMobile = UIS.TouchEnabled
-    _G.Farm = false
+    local isMobile = game:GetService("UserInputService").TouchEnabled
 
-    local function startAutoFarm()
+    function startAutoFarm()
         task.spawn(function()
             while _G.Farm do
+                -- Vérification du personnage et de HumanoidRootPart
                 if not character or not humPart then
-                    task.wait(1.5)
+                    task.wait(1.55) -- mobile plus rapide, PC plus long
                     character = LocalPlayer.Character
                     humPart = character and character:FindFirstChild("HumanoidRootPart")
                 end
-
+    
                 if map and map:FindFirstChild("CoinContainer") then
-                    local coins = {}
+                    local validCoins = {}
                     for _, coin in ipairs(map.CoinContainer:GetChildren()) do
                         if coin:IsA("Part") and coin.Name == "Coin_Server" and coin:GetAttribute("CoinID") == "BeachBall" then
                             local cv = coin:FindFirstChild("CoinVisual")
                             if cv and cv.Transparency ~= 1 then
-                                table.insert(coins, coin)
+                                table.insert(validCoins, coin)
                             end
                         end
                     end
-
-                    if #coins > 0 and humPart then
-                        local coinToCollect = coins[math.random(1, #coins)]
+    
+                    if #validCoins > 0 and humPart then
+                        -- choisir une pièce aléatoire
+                        local coinToCollect = validCoins[math.random(1, #validCoins)]
                         humPart.CFrame = coinToCollect.CFrame
-                        task.wait(isMobile and 1.6 or 0.9)
-                        humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0,4,0)
-                        task.wait(isMobile and 1.6 or 1.3)
+                        task.wait(isMobile and 1.65 or 0.9) -- temps de ramassage selon device
+                        humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 4, 0) -- retour
+                        task.wait(isMobile and 1.6 or 1.3) -- temps de retour selon device
                     else
-                        humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0,4,0)
+                        humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 4, 0)
                         task.wait(2)
                     end
                 else
-                    task.wait(1.5)
+                    task.wait(1.55)
                 end
             end
         end)
     end
-
-    local function stopAutoFarm()
+    
+    function stopAutoFarm()
         _G.Farm = false
     end
 
