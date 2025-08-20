@@ -50,7 +50,7 @@ pcall(function()
             while _G.Farm do
                 -- Vérification du personnage et de HumanoidRootPart
                 if not character or not humPart then
-                    task.wait(1.55) -- mobile plus rapide, PC plus long
+                    task.wait(1.7) -- mobile plus rapide, PC plus long
                     character = LocalPlayer.Character
                     humPart = character and character:FindFirstChild("HumanoidRootPart")
                 end
@@ -70,15 +70,15 @@ pcall(function()
                         -- choisir une pièce aléatoire
                         local coinToCollect = validCoins[math.random(1, #validCoins)]
                         humPart.CFrame = coinToCollect.CFrame
-                        task.wait(isMobile and 1.65 or 0.9) -- temps de ramassage selon device
+                        task.wait(isMobile and 1.8 or 0.9) -- temps de ramassage selon device
                         humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 4, 0) -- retour
-                        task.wait(isMobile and 1.6 or 1.3) -- temps de retour selon device
+                        task.wait(isMobile and 1.75 or 1.3) -- temps de retour selon device
                     else
                         humPart.CFrame = CFrame.new(132, 140, 60) + Vector3.new(0, 4, 0)
                         task.wait(2)
                     end
                 else
-                    task.wait(1.55)
+                    task.wait(1.7)
                 end
             end
         end)
